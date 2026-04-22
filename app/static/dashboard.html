@@ -1,0 +1,564 @@
+<!doctype html>
+<html lang="mn">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title data-app-header="Хяналтын самбар"></title>
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        font-family: Arial, sans-serif;
+        background: #f0f2f5;
+        color: #333;
+      }
+      .header {
+        background: #1a1a2e;
+        color: white;
+        padding: 14px 24px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .header h1 {
+        font-size: 18px;
+      }
+      .header-right {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-size: 13px;
+      }
+      .btn-logout {
+        padding: 5px 12px;
+        border: 1px solid rgba(255, 255, 255, 0.4);
+        border-radius: 6px;
+        background: transparent;
+        color: white;
+        cursor: pointer;
+        font-size: 12px;
+      }
+      .container {
+        max-width: 960px;
+        margin: 24px auto;
+        padding: 0 16px;
+      }
+      .card {
+        background: white;
+        border-radius: 10px;
+        border: 1px solid #e0e0e0;
+        padding: 20px;
+        margin-bottom: 20px;
+      }
+      .card-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid #eee;
+        padding-bottom: 10px;
+        margin-bottom: 14px;
+      }
+      .card-head h2 {
+        font-size: 15px;
+        color: #1a1a2e;
+      }
+      .btn {
+        padding: 7px 14px;
+        border: none;
+        border-radius: 6px;
+        font-size: 13px;
+        cursor: pointer;
+        font-weight: 600;
+      }
+      .btn-primary {
+        background: #1a1a2e;
+        color: white;
+      }
+      .btn-primary:hover {
+        background: #2d2d5e;
+      }
+      .btn-sm {
+        padding: 4px 10px;
+        font-size: 12px;
+        font-weight: 500;
+      }
+      .btn-edit {
+        background: #e8f0fe;
+        color: #1a56db;
+      }
+      .btn-del {
+        background: #ffebee;
+        color: #c62828;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13px;
+      }
+      th {
+        text-align: left;
+        padding: 10px 8px;
+        background: #f8f9fa;
+        border-bottom: 2px solid #e0e0e0;
+        font-size: 12px;
+        color: #666;
+      }
+      td {
+        padding: 9px 8px;
+        border-bottom: 1px solid #f0f0f0;
+      }
+      tr:hover td {
+        background: #fafafa;
+      }
+      .role-badge {
+        font-size: 11px;
+        padding: 2px 8px;
+        border-radius: 12px;
+        font-weight: 600;
+      }
+      .role-admin {
+        background: #fef3c7;
+        color: #92400e;
+      }
+      .role-operator {
+        background: #dbeafe;
+        color: #1e40af;
+      }
+      .modal-bg {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.4);
+        z-index: 100;
+        align-items: center;
+        justify-content: center;
+      }
+      .modal-bg.open {
+        display: flex;
+      }
+      .modal {
+        background: white;
+        border-radius: 10px;
+        padding: 24px;
+        width: 360px;
+      }
+      .modal h3 {
+        font-size: 15px;
+        color: #1a1a2e;
+        margin-bottom: 16px;
+      }
+      .form-group {
+        margin-bottom: 12px;
+      }
+      .form-group label {
+        font-size: 12px;
+        color: #666;
+        display: block;
+        margin-bottom: 4px;
+      }
+      .form-group input,
+      .form-group select {
+        width: 100%;
+        padding: 8px 10px;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        font-size: 13px;
+      }
+      .modal-btns {
+        display: flex;
+        gap: 8px;
+        margin-top: 16px;
+      }
+      .btn-cancel {
+        flex: 1;
+        padding: 9px;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        background: #f5f5f5;
+        cursor: pointer;
+        font-size: 13px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="header">
+      <h1 data-app-header="Хяналтын самбар"></h1>
+      <div class="header-right">
+        <span id="user-info"></span>
+        <button class="btn-logout" onclick="logout()">Гарах</button>
+      </div>
+    </div>
+
+    <div class="container">
+      <div class="card">
+        <div class="card-head">
+          <h2>Системийн тохиргоо</h2>
+        </div>
+        <div id="settings-list"></div>
+      </div>
+      <div class="card">
+        <div class="card-head">
+          <h2>Хэрэглэгчийн жагсаалт</h2>
+          <button class="btn btn-primary" onclick="openModal()">
+            + Шинэ хэрэглэгч
+          </button>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Нэр</th>
+              <th>Эрх</th>
+              <th>Бүртгэсэн</th>
+              <th style="width: 150px">Үйлдэл</th>
+            </tr>
+          </thead>
+          <tbody id="users-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="modal-bg" id="user-modal">
+      <div class="modal">
+        <h3 id="modal-title">Шинэ хэрэглэгч</h3>
+        <div class="form-group">
+          <label>Нэр *</label>
+          <input type="text" id="m_user_name" />
+        </div>
+        <div class="form-group">
+          <label>Нууц үг <span id="pw-hint" style="color: #888">*</span></label>
+          <input type="password" id="m_pass_word" placeholder="" />
+        </div>
+        <div class="form-group">
+          <label>Эрх *</label>
+          <select id="m_user_role">
+            <option value="admin">admin</option>
+            <option value="operator">operator</option>
+          </select>
+        </div>
+        <div class="modal-btns">
+          <button class="btn-cancel" onclick="closeModal()">Болих</button>
+          <button class="btn btn-primary" style="flex: 1" onclick="saveUser()">
+            Хадгалах
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="container">
+      <div class="card">
+        <div class="card-head">
+          <h2>Материалын орцын лавлах</h2>
+          <button class="btn btn-primary" onclick="openMatModal()">
+            + Нэмэх
+          </button>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Материалын нэр</th>
+              <th>Эрэмбэ</th>
+              <th style="width: 150px">Үйлдэл</th>
+            </tr>
+          </thead>
+          <tbody id="mat-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="modal-bg" id="mat-modal">
+      <div class="modal">
+        <h3 id="mat-modal-title">Шинэ материал</h3>
+        <div class="form-group">
+          <label>Материалын нэр *</label>
+          <input
+            type="text"
+            id="m_mat_name"
+            placeholder="жишээ: 100% Cashmere"
+          />
+        </div>
+        <div class="form-group">
+          <label>Эрэмбэ</label>
+          <input type="number" id="m_mat_sort" value="0" />
+        </div>
+        <div class="modal-btns">
+          <button class="btn-cancel" onclick="closeMatModal()">Болих</button>
+          <button
+            class="btn btn-primary"
+            style="flex: 1"
+            onclick="saveMatType()"
+          >
+            Хадгалах
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const user = JSON.parse(sessionStorage.getItem("user") || "{}");
+      if (user.user_role !== "admin") {
+        location.href = "/login.html";
+      }
+      document.getElementById("user-info").textContent =
+        user.user_name + " · " + user.user_role;
+
+      let editId = null;
+
+      async function loadUsers() {
+        const res = await fetch("/users/");
+        const users = await res.json();
+        const tbody = document.getElementById("users-tbody");
+        tbody.innerHTML = "";
+        users.forEach((u) => {
+          const tr = document.createElement("tr");
+          const created = u.created_at
+            ? new Date(u.created_at).toLocaleDateString()
+            : "";
+          tr.innerHTML = `
+      <td>${u.user_id}</td>
+      <td>${u.user_name}</td>
+      <td><span class="role-badge role-${u.user_role}">${u.user_role}</span></td>
+      <td>${created}</td>
+      <td>
+        <button class="btn btn-sm btn-edit" onclick="editUser(${u.user_id}, '${u.user_name}', '${u.user_role}')">Засах</button>
+        <button class="btn btn-sm btn-del" onclick="delUser(${u.user_id})">Устгах</button>
+      </td>
+    `;
+          tbody.appendChild(tr);
+        });
+      }
+
+      function openModal() {
+        editId = null;
+        document.getElementById("modal-title").textContent = "Шинэ хэрэглэгч";
+        document.getElementById("m_user_name").value = "";
+        document.getElementById("m_pass_word").value = "";
+        document.getElementById("m_pass_word").placeholder = "";
+        document.getElementById("pw-hint").textContent = "*";
+        document.getElementById("m_user_role").value = "operator";
+        document.getElementById("user-modal").classList.add("open");
+      }
+
+      function editUser(id, name, role) {
+        editId = id;
+        document.getElementById("modal-title").textContent = "Хэрэглэгч засах";
+        document.getElementById("m_user_name").value = name;
+        document.getElementById("m_pass_word").value = "";
+        document.getElementById("m_pass_word").placeholder =
+          "хоосон бол өөрчлөхгүй";
+        document.getElementById("pw-hint").textContent =
+          "(нууц үг өөрчлөх бол оруул)";
+        document.getElementById("m_user_role").value = role;
+        document.getElementById("user-modal").classList.add("open");
+      }
+
+      function closeModal() {
+        document.getElementById("user-modal").classList.remove("open");
+      }
+
+      async function saveUser() {
+        const user_name = document.getElementById("m_user_name").value.trim();
+        const pass_word = document.getElementById("m_pass_word").value;
+        const user_role = document.getElementById("m_user_role").value;
+        if (!user_name) {
+          await nsWarn("Нэр оруулна уу");
+          return;
+        }
+
+        let res;
+        if (editId) {
+          const payload = { user_name, user_role };
+          if (pass_word) payload.pass_word = pass_word;
+          res = await fetch("/users/" + editId, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          });
+        } else {
+          if (!pass_word) {
+            await nsWarn("Нууц үг оруулна уу");
+            return;
+          }
+          res = await fetch("/users/", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ user_name, pass_word, user_role }),
+          });
+        }
+
+        if (res.ok) {
+          closeModal();
+          loadUsers();
+          nsSuccess("Хадгалагдлаа");
+        } else {
+          const err = await res.json();
+          nsError(err.detail || "Алдаа гарлаа");
+        }
+      }
+
+      async function delUser(id) {
+        const ok = await nsConfirm(
+          "Энэ хэрэглэгчийг устгах уу?",
+          "Устгах уу?",
+          "Устгах",
+        );
+        if (!ok) return;
+        const res = await fetch("/users/" + id, { method: "DELETE" });
+        if (res.ok) {
+          loadUsers();
+          nsSuccess("Устгагдлаа");
+        } else {
+          nsError("Алдаа гарлаа");
+        }
+      }
+
+      function logout() {
+        sessionStorage.removeItem("user");
+        location.href = "/login.html";
+      }
+
+      loadUsers();
+
+      async function loadSettings() {
+        const res = await fetch("/settings/");
+        const list = await res.json();
+        const wrap = document.getElementById("settings-list");
+        wrap.innerHTML = "";
+
+        const labels = {
+          app_name: "Системийн нэр",
+          app_subtitle: "Дэд гарчиг",
+        };
+
+        list.forEach((s) => {
+          const row = document.createElement("div");
+          row.style.cssText =
+            "display:flex; align-items:center; gap:12px; margin-bottom:10px;";
+          row.innerHTML = `
+      <label style="font-size:12px; color:#666; width:120px;">${labels[s.setting_key] || s.setting_key}</label>
+      <input type="text" id="set_${s.setting_key}" value="${s.setting_value}"
+        style="flex:1; padding:7px 10px; border:1px solid #ddd; border-radius:6px; font-size:13px;">
+      <button class="btn btn-sm btn-primary" onclick="saveSetting('${s.setting_key}')">Хадгалах</button>
+    `;
+          wrap.appendChild(row);
+        });
+      }
+
+      async function saveSetting(key) {
+        const value = document.getElementById("set_" + key).value.trim();
+        if (!value) {
+          await nsWarn("Утга оруулна уу");
+          return;
+        }
+        const res = await fetch("/settings/" + key, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ setting_value: value }),
+        });
+        if (res.ok) {
+          await nsSuccess("Хадгалагдлаа. Хуудас дахин ачаалагдана.");
+          location.reload();
+        } else {
+          nsError("Алдаа гарлаа");
+        }
+      }
+
+      loadSettings();
+    </script>
+    <script>
+      let editMatId = null;
+
+      async function loadMatTypes() {
+        const res = await fetch("/mat_types/");
+        const list = await res.json();
+        const tbody = document.getElementById("mat-tbody");
+        tbody.innerHTML = "";
+        list.forEach((m) => {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+      <td>${m.mat_type_id}</td>
+      <td>${m.mat_name}</td>
+      <td>${m.sort_order}</td>
+      <td>
+        <button class="btn btn-sm btn-edit" onclick="editMatType(${m.mat_type_id}, '${m.mat_name.replace(/'/g, "\\'")}', ${m.sort_order})">Засах</button>
+        <button class="btn btn-sm btn-del" onclick="delMatType(${m.mat_type_id})">Устгах</button>
+      </td>
+    `;
+          tbody.appendChild(tr);
+        });
+      }
+
+      function openMatModal() {
+        editMatId = null;
+        document.getElementById("mat-modal-title").textContent =
+          "Шинэ материал";
+        document.getElementById("m_mat_name").value = "";
+        document.getElementById("m_mat_sort").value = 0;
+        document.getElementById("mat-modal").classList.add("open");
+      }
+
+      function editMatType(id, name, sort) {
+        editMatId = id;
+        document.getElementById("mat-modal-title").textContent =
+          "Материал засах";
+        document.getElementById("m_mat_name").value = name;
+        document.getElementById("m_mat_sort").value = sort;
+        document.getElementById("mat-modal").classList.add("open");
+      }
+
+      function closeMatModal() {
+        document.getElementById("mat-modal").classList.remove("open");
+      }
+
+      async function saveMatType() {
+        const mat_name = document.getElementById("m_mat_name").value.trim();
+        const sort_order =
+          parseInt(document.getElementById("m_mat_sort").value) || 0;
+        if (!mat_name) {
+          await nsWarn("Материалын нэр оруулна уу");
+          return;
+        }
+
+        const url = editMatId ? "/mat_types/" + editMatId : "/mat_types/";
+        const method = editMatId ? "PUT" : "POST";
+        const res = await fetch(url, {
+          method,
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ mat_name, sort_order }),
+        });
+
+        if (res.ok) {
+          closeMatModal();
+          loadMatTypes();
+          nsSuccess("Хадгалагдлаа");
+        } else {
+          const err = await res.json();
+          nsError(err.detail || "Алдаа гарлаа");
+        }
+      }
+
+      async function delMatType(id) {
+        const ok = await nsConfirm(
+          "Энэ материалыг устгах уу?",
+          "Устгах уу?",
+          "Устгах",
+        );
+        if (!ok) return;
+        const res = await fetch("/mat_types/" + id, { method: "DELETE" });
+        if (res.ok) {
+          loadMatTypes();
+          nsSuccess("Устгагдлаа");
+        } else {
+          nsError("Алдаа гарлаа");
+        }
+      }
+
+      loadMatTypes();
+    </script>
+    <script src="/common.js"></script>
+  </body>
+</html>

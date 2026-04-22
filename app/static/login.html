@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="mn">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title data-app-header="Нэвтрэх"></title>
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        font-family: Arial, sans-serif;
+        background: #f0f2f5;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+      }
+      .card {
+        background: white;
+        border-radius: 10px;
+        border: 1px solid #e0e0e0;
+        padding: 36px 32px;
+        width: 340px;
+      }
+      .logo {
+        text-align: center;
+        margin-bottom: 28px;
+      }
+      .logo h1 {
+        font-size: 22px;
+        color: #1a1a2e;
+        font-weight: 700;
+      }
+      .logo p {
+        font-size: 12px;
+        color: #888;
+        margin-top: 4px;
+      }
+      .form-group {
+        margin-bottom: 14px;
+      }
+      label {
+        font-size: 12px;
+        color: #666;
+        display: block;
+        margin-bottom: 4px;
+      }
+      input {
+        width: 100%;
+        padding: 9px 12px;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        font-size: 14px;
+        background: #fafafa;
+      }
+      input:focus {
+        outline: none;
+        border-color: #1a1a2e;
+        background: white;
+      }
+      .btn {
+        width: 100%;
+        padding: 11px;
+        background: #1a1a2e;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        margin-top: 8px;
+      }
+      .btn:hover {
+        background: #2d2d5e;
+      }
+      .btn:disabled {
+        background: #999;
+        cursor: not-allowed;
+      }
+      .error {
+        background: #ffebee;
+        color: #c62828;
+        border: 1px solid #ef9a9a;
+        border-radius: 6px;
+        padding: 9px 12px;
+        font-size: 13px;
+        margin-top: 12px;
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="card">
+      <div class="logo">
+        <h1 data-app-name></h1>
+        <p data-app-subtitle></p>
+      </div>
+      <div class="form-group">
+        <label>Нэвтрэх нэр</label>
+        <input type="text" id="user_name" autofocus />
+      </div>
+      <div class="form-group">
+        <label>Нууц үг</label>
+        <input
+          type="password"
+          id="pass_word"
+          onkeydown="if (event.key === 'Enter') doLogin();"
+        />
+      </div>
+      <button class="btn" id="login-btn" onclick="doLogin()">Нэвтрэх</button>
+      <div class="error" id="error-msg"></div>
+    </div>
+
+    <script>
+      async function doLogin() {
+        const user_name = document.getElementById("user_name").value.trim();
+        const pass_word = document.getElementById("pass_word").value;
+        if (!user_name || !pass_word) {
+          showError("Нэвтрэх нэр болон нууц үгээ оруулна уу");
+          return;
+        }
+
+        const btn = document.getElementById("login-btn");
+        btn.disabled = true;
+        btn.textContent = "Түр хүлээнэ үү...";
+
+        try {
+          const res = await fetch("/auth/login", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ user_name, pass_word }),
+          });
+
+          if (res.ok) {
+            const user = await res.json();
+            sessionStorage.setItem("user", JSON.stringify(user));
+            location.href =
+              user.user_role === "admin" ? "/dashboard.html" : "/orders.html";
+          } else {
+            const err = await res.json();
+            showError(err.detail);
+          }
+        } catch (e) {
+          showError("Серверт холбогдохгүй байна");
+        } finally {
+          btn.disabled = false;
+          btn.textContent = "Нэвтрэх";
+        }
+      }
+
+      function showError(msg) {
+        const el = document.getElementById("error-msg");
+        el.textContent = msg;
+        el.style.display = "block";
+      }
+
+      const existing = sessionStorage.getItem("user");
+      if (existing) {
+        const u = JSON.parse(existing);
+        location.href =
+          u.user_role === "admin" ? "/dashboard.html" : "/orders.html";
+      }
+    </script>
+    <script src="/common.js"></script>
+  </body>
+</html>

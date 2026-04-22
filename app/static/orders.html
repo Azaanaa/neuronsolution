@@ -1,0 +1,584 @@
+<!doctype html>
+<html lang="mn">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title data-app-header="Захиалгын бүртгэл"></title>
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        font-family: Arial, sans-serif;
+        background: #f0f2f5;
+        color: #333;
+      }
+      .header {
+        background: #1a1a2e;
+        color: white;
+        padding: 14px 24px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .header h1 {
+        font-size: 18px;
+      }
+      .header-right {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-size: 13px;
+      }
+      .btn-logout {
+        padding: 5px 12px;
+        border: 1px solid rgba(255, 255, 255, 0.4);
+        border-radius: 6px;
+        background: transparent;
+        color: white;
+        cursor: pointer;
+        font-size: 12px;
+      }
+      .container {
+        max-width: 1200px;
+        margin: 24px auto;
+        padding: 0 16px;
+      }
+      .card {
+        background: white;
+        border-radius: 10px;
+        border: 1px solid #e0e0e0;
+        padding: 20px;
+        margin-bottom: 20px;
+      }
+      .card-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid #eee;
+        padding-bottom: 10px;
+        margin-bottom: 14px;
+      }
+      .card-head h2 {
+        font-size: 15px;
+        color: #1a1a2e;
+      }
+      .btn {
+        padding: 7px 14px;
+        border: none;
+        border-radius: 6px;
+        font-size: 13px;
+        cursor: pointer;
+        font-weight: 600;
+      }
+      .btn-primary {
+        background: #1a1a2e;
+        color: white;
+      }
+      .btn-primary:hover {
+        background: #2d2d5e;
+      }
+      .btn-sm {
+        padding: 4px 10px;
+        font-size: 12px;
+        font-weight: 500;
+      }
+      .btn-edit {
+        background: #e8f0fe;
+        color: #1a56db;
+      }
+      .btn-del {
+        background: #ffebee;
+        color: #c62828;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 12px;
+      }
+      th {
+        text-align: left;
+        padding: 8px 6px;
+        background: #f8f9fa;
+        border-bottom: 2px solid #e0e0e0;
+        font-size: 11px;
+        color: #666;
+        white-space: nowrap;
+      }
+      td {
+        padding: 7px 6px;
+        border-bottom: 1px solid #f0f0f0;
+      }
+      tr:hover td {
+        background: #fafafa;
+      }
+      .modal-bg {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.4);
+        z-index: 100;
+        align-items: center;
+        justify-content: center;
+      }
+      .modal-bg.open {
+        display: flex;
+      }
+      .modal {
+        background: white;
+        border-radius: 10px;
+        padding: 24px;
+        width: 560px;
+        max-height: 90vh;
+        overflow-y: auto;
+      }
+      .modal h3 {
+        font-size: 15px;
+        color: #1a1a2e;
+        margin-bottom: 16px;
+      }
+      .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin-bottom: 10px;
+      }
+      .form-group label {
+        font-size: 11px;
+        color: #666;
+        display: block;
+        margin-bottom: 3px;
+      }
+      .form-group input {
+        width: 100%;
+        padding: 7px 10px;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        font-size: 13px;
+      }
+      .modal-btns {
+        display: flex;
+        gap: 8px;
+        margin-top: 16px;
+      }
+      .btn-cancel {
+        flex: 1;
+        padding: 9px;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        background: #f5f5f5;
+        cursor: pointer;
+        font-size: 13px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="header">
+      <h1 data-app-header="Захиалгын бүртгэл"></h1>
+      <div class="header-right">
+        <span id="user-info"></span>
+        <button class="btn-logout" onclick="logout()">Гарах</button>
+      </div>
+    </div>
+
+    <div class="container">
+      <div class="card">
+        <div class="card-head">
+          <h2>Захиалгын жагсаалт</h2>
+          <button class="btn btn-primary" onclick="openModal()">
+            + Шинэ захиалга
+          </button>
+        </div>
+        <div style="overflow-x: auto">
+          <table>
+            <thead>
+              <tr>
+                <th>PK</th>
+                <th>Захиалга ID</th>
+                <th>Захиалга нэр</th>
+                <th>Материал</th>
+                <th>Загвар</th>
+                <th>Захиалагч загвар</th>
+                <th>Өнгө</th>
+                <th>Захиалагч өнгө</th>
+                <th>Размер</th>
+                <th>Гейч</th>
+                <th>Утас №</th>
+                <th>Тоо</th>
+                <th>Дуусах</th>
+                <th>Тайлбар</th>
+                <th>Нөхцөл</th>
+                <th style="width: 130px">Үйлдэл</th>
+              </tr>
+            </thead>
+            <tbody id="orders-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-bg" id="order-modal">
+      <div class="modal">
+        <h3 id="modal-title">Шинэ захиалга</h3>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Захиалга ID *</label><input type="text" id="m_order_id" />
+          </div>
+          <div class="form-group">
+            <label>Захиалга нэр *</label><input type="text" id="m_order_name" />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Загвар</label><input type="text" id="m_model_no" />
+          </div>
+          <div class="form-group">
+            <label>Захиалагч загвар</label
+            ><input type="text" id="m_custom_model" />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Өнгө</label><input type="text" id="m_color_code" />
+          </div>
+          <div class="form-group">
+            <label>Захиалагч өнгө</label
+            ><input type="text" id="m_custom_color" />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Гейч</label><input type="text" id="m_gage" />
+          </div>
+          <div class="form-group">
+            <label>Утас №</label><input type="text" id="m_ply" />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Материалын орц</label>
+            <select
+              id="m_mat_type"
+              style="
+                width: 100%;
+                padding: 7px 10px;
+                border: 1px solid #ddd;
+                border-radius: 6px;
+                font-size: 13px;
+              "
+            >
+              <option value="">— сонгоно уу —</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Дуусах огноо</label><input type="date" id="m_finishDate" />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Размер</label><input type="text" id="m_size" />
+          </div>
+          <div class="form-group">
+            <label>Тоо</label
+            ><input type="number" id="m_order_qnty" value="0" />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group" style="grid-column: 1/-1">
+            <label>Тайлбар</label><input type="text" id="m_order_description" />
+          </div>
+        </div>
+
+        <div
+          style="
+            margin-top: 6px;
+            padding: 10px 12px;
+            background: #f8f9fa;
+            border-radius: 6px;
+          "
+        >
+          <label
+            style="
+              font-size: 11px;
+              color: #666;
+              display: block;
+              margin-bottom: 8px;
+            "
+            >Нэмэлт нөхцөл</label
+          >
+          <div style="display: flex; flex-wrap: wrap; gap: 14px">
+            <label
+              style="
+                font-size: 13px;
+                display: flex;
+                align-items: center;
+                gap: 5px;
+                cursor: pointer;
+              "
+            >
+              <input type="checkbox" id="c_redo" /> Дахин хийлт
+            </label>
+            <label
+              style="
+                font-size: 13px;
+                display: flex;
+                align-items: center;
+                gap: 5px;
+                cursor: pointer;
+              "
+            >
+              <input type="checkbox" id="c_pull" /> Хөөлт
+            </label>
+            <label
+              style="
+                font-size: 13px;
+                display: flex;
+                align-items: center;
+                gap: 5px;
+                cursor: pointer;
+              "
+            >
+              <input type="checkbox" id="c_original" /> Эх загвар
+            </label>
+            <label
+              style="
+                font-size: 13px;
+                display: flex;
+                align-items: center;
+                gap: 5px;
+                cursor: pointer;
+              "
+            >
+              <input type="checkbox" id="c_embroidery" /> Хатгамал
+            </label>
+            <label
+              style="
+                font-size: 13px;
+                display: flex;
+                align-items: center;
+                gap: 5px;
+                cursor: pointer;
+              "
+            >
+              <input type="checkbox" id="c_print" /> Принт
+            </label>
+          </div>
+          <div style="margin-top: 8px; font-size: 12px; color: #1a56db">
+            Код:
+            <span
+              id="cond-preview"
+              style="font-family: monospace; font-weight: 600"
+              >00000</span
+            >
+          </div>
+        </div>
+
+        <div class="modal-btns">
+          <button class="btn-cancel" onclick="closeModal()">Болих</button>
+          <button class="btn btn-primary" style="flex: 1" onclick="saveOrder()">
+            Хадгалах
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const user = JSON.parse(sessionStorage.getItem("user") || "{}");
+      if (!user.user_role) {
+        location.href = "/login.html";
+      }
+      document.getElementById("user-info").textContent =
+        user.user_name + " · " + user.user_role;
+
+      const FIELDS = [
+        "order_id",
+        "order_name",
+        "mat_type",
+        "model_no",
+        "custom_model",
+        "color_code",
+        "custom_color",
+        "size",
+        "gage",
+        "ply",
+        "order_qnty",
+        "finishDate",
+        "order_description",
+      ];
+      let editPkey = null;
+
+      async function loadMatTypes() {
+        const res = await fetch("/mat_types/");
+        const list = await res.json();
+        const sel = document.getElementById("m_mat_type");
+        sel.innerHTML = '<option value="">— сонгоно уу —</option>';
+        list.forEach((m) => {
+          sel.innerHTML += `<option value="${m.mat_name}">${m.mat_name}</option>`;
+        });
+      }
+      loadMatTypes();
+
+      const CHECKS = [
+        "c_redo",
+        "c_pull",
+        "c_original",
+        "c_embroidery",
+        "c_print",
+      ];
+
+      function updateCondPreview() {
+        const code = CHECKS.map((id) =>
+          document.getElementById(id).checked ? "1" : "0",
+        ).join("");
+        document.getElementById("cond-preview").textContent = code;
+        return code;
+      }
+
+      function setCondFromCode(code) {
+        code = (code || "00000").padEnd(5, "0").slice(0, 5);
+        CHECKS.forEach((id, i) => {
+          document.getElementById(id).checked = code[i] === "1";
+        });
+        document.getElementById("cond-preview").textContent = code;
+      }
+
+      CHECKS.forEach((id) => {
+        document.addEventListener("DOMContentLoaded", () => {});
+      });
+
+      setTimeout(() => {
+        CHECKS.forEach((id) => {
+          document
+            .getElementById(id)
+            .addEventListener("change", updateCondPreview);
+        });
+      }, 100);
+
+      async function loadOrders() {
+        const res = await fetch("/orders/");
+        const orders = await res.json();
+        const tbody = document.getElementById("orders-tbody");
+        tbody.innerHTML = "";
+        orders.forEach((o) => {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+      <td>${o.pkey}</td>
+      <td>${o.order_id}</td>
+      <td>${o.order_name}</td>
+      <td>${o.mat_type || ""}</td>
+      <td>${o.model_no || ""}</td>
+      <td>${o.custom_model || ""}</td>
+      <td>${o.color_code || ""}</td>
+      <td>${o.custom_color || ""}</td>
+      <td>${o.size || ""}</td>
+      <td>${o.gage || ""}</td>
+      <td>${o.ply || ""}</td>
+      <td>${o.order_qnty}</td>
+      <td>${o.finishDate || ""}</td>
+      <td>${o.order_description}</td>
+      <td>${o.add_condition}</td>
+      <td>
+        <button class="btn btn-sm btn-edit" onclick='editOrder(${JSON.stringify(o)})'>Засах</button>
+        <button class="btn btn-sm btn-del" onclick="delOrder(${o.pkey})">Устгах</button>
+      </td>
+    `;
+          tbody.appendChild(tr);
+        });
+      }
+
+      function openModal() {
+        editPkey = null;
+        document.getElementById("modal-title").textContent = "Шинэ захиалга";
+        FIELDS.forEach((f) => {
+          const el = document.getElementById("m_" + f);
+          if (el) el.value = f === "quantity" ? 0 : "";
+        });
+        document.getElementById("order-modal").classList.add("open");
+        setCondFromCode("00000");
+      }
+
+      function editOrder(o) {
+        editPkey = o.pkey;
+        document.getElementById("modal-title").textContent = "Захиалга засах";
+        FIELDS.forEach((f) => {
+          const el = document.getElementById("m_" + f);
+          if (el) el.value = o[f] ?? "";
+        });
+        document.getElementById("order-modal").classList.add("open");
+        setCondFromCode(o.add_condition);
+      }
+
+      function closeModal() {
+        document.getElementById("order-modal").classList.remove("open");
+      }
+
+      async function saveOrder() {
+        const payload = {};
+        FIELDS.forEach((f) => {
+          const v = document.getElementById("m_" + f).value;
+          if (f === "quantity") payload[f] = parseInt(v) || 0;
+          else payload[f] = v || null;
+        });
+        payload.add_condition = updateCondPreview();
+        if (
+          !payload.order_id ||
+          !payload.order_name ||
+          !payload.model_no ||
+          !payload.custom_model ||
+          !payload.color_code ||
+          !payload.custom_color ||
+          !payload.size ||
+          !payload.gage ||
+          !payload.ply ||
+          !payload.mat_type ||
+          !payload.finishDate
+        ) {
+          await nsWarn("Бүх талбарыг бөглөнө үү");
+          return;
+        }
+        const url = editPkey ? "/orders/" + editPkey : "/orders/";
+        const method = editPkey ? "PUT" : "POST";
+        const res = await fetch(url, {
+          method,
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+
+        if (res.ok) {
+          closeModal();
+          loadOrders();
+          nsSuccess("Захиалга амжилттай хадгалагдлаа");
+        } else {
+          const err = await res.json();
+          nsError(err.detail || "Тодорхойгүй алдаа");
+        }
+      }
+
+      async function delOrder(pkey) {
+        const ok = await nsConfirm(
+          "Энэ захиалгыг устгахдаа итгэлтэй байна уу?",
+          "Устгах уу?",
+          "Устгах",
+        );
+        if (!ok) return;
+        const res = await fetch("/orders/" + pkey, { method: "DELETE" });
+        if (res.ok) {
+          loadOrders();
+          nsSuccess("Устгагдлаа");
+        } else {
+          nsError("Устгах үед алдаа гарлаа");
+        }
+      }
+
+      function logout() {
+        sessionStorage.removeItem("user");
+        location.href = "/login.html";
+      }
+
+      loadOrders();
+    </script>
+    <script src="/common.js"></script>
+  </body>
+</html>
