@@ -296,6 +296,56 @@
           </button>
         </div>
       </div>
+
+    <div class="container">
+      <div class="card">
+        <div class="card-head">
+          <h2>Размерийн лавлах</h2>
+          <button class="btn btn-primary" onclick="openSizeModal()">
+            + Нэмэх
+          </button>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Размерийн нэр</th>
+              <th>Эрэмбэ</th>
+              <th style="width: 150px">Үйлдэл</th>
+            </tr>
+          </thead>
+          <tbody id="size-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="modal-bg" id="size-modal">
+      <div class="modal">
+        <h3 id="size-modal-title">Шинэ размер</h3>
+        <div class="form-group">
+          <label>Размерийн нэр *</label>
+          <input
+            type="text"
+            id="m_size_name"
+            placeholder="жишээ: S"
+          />
+        </div>
+        <div class="form-group">
+          <label>Эрэмбэ</label>
+          <input type="number" id="m_size_sort" value="0" />
+        </div>
+        <div class="modal-btns">
+          <button class="btn-cancel" onclick="closeSizeModal()">Болих</button>
+          <button
+            class="btn btn-primary"
+            style="flex: 1"
+            onclick="saveSizeType()"
+          >
+            Хадгалах
+          </button>
+        </div>
+      </div>
+
     </div>
 
     <script>
@@ -469,6 +519,7 @@
 
       loadSettings();
     </script>
+    
     <script>
       let editMatId = null;
 
@@ -559,6 +610,98 @@
 
       loadMatTypes();
     </script>
-    <script src="/common.js"></script>
+
+    <script>
+      let editSizeId = null;
+
+      async function loadSizeTypes() {
+        const res = await fetch("/size_types/");
+        const list = await res.json();
+        const tbody = document.getElementById("size-tbody");
+        tbody.innerHTML = "";
+        list.forEach((m) => {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+      <td>${m.size_type_id}</td>
+      <td>${m.size_name}</td>
+      <td>${m.sort_order}</td>
+      <td>
+        <button class="btn btn-sm btn-edit" onclick="editSizeType(${m.size_type_id}, '${m.size_name.replace(/'/g, "\\'")}', ${m.sort_order})">Засах</button>
+        <button class="btn btn-sm btn-del" onclick="delSizeType(${m.size_type_id})">Устгах</button>
+      </td>
+    `;
+          tbody.appendChild(tr);
+        });
+      }
+
+      function openSizeModal() {
+        editSizeId = null;
+        document.getElementById("size-modal-title").textContent =
+          "Шинэ размер";
+        document.getElementById("m_size_name").value = "";
+        document.getElementById("m_size_sort").value = 0;
+        document.getElementById("size-modal").classList.add("open");
+      }
+
+      function editSizeType(id, name, sort) {
+        editSizeId = id;
+        document.getElementById("size-modal-title").textContent =
+          "Размер засах";
+        document.getElementById("m_size_name").value = name;
+        document.getElementById("m_size_sort").value = sort;
+        document.getElementById("size-modal").classList.add("open");
+      }
+
+      function closeSizeModal() {
+        document.getElementById("size-modal").classList.remove("open");
+      }
+
+      async function saveSizeType() {
+        const size_name = document.getElementById("m_size_name").value.trim();
+        const sort_order =
+          parseInt(document.getElementById("m_size_sort").value) || 0;
+        if (!size_name) {
+          await nsWarn("Размерийн нэр оруулна уу");
+          return;
+        }
+
+        const url = editSizeId ? "/size_types/" + editSizeId : "/size_types/";
+        const method = editSizeId ? "PUT" : "POST";
+        const res = await fetch(url, {
+          method,
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ size_name, sort_order }),
+        });
+
+        if (res.ok) {
+          closeSizeModal();
+          loadSizeTypes();
+          nsSuccess("Хадгалагдлаа");
+        } else {
+          const err = await res.json();
+          nsError(err.detail || "Алдаа гарлаа");
+        }
+      }
+
+      async function delSizeType(id) {
+        const ok = await nsConfirm(
+          "Энэ размерийг устгах уу?",
+          "Устгах уу?",
+          "Устгах",
+        );
+        if (!ok) return;
+        const res = await fetch("/size_types/" + id, { method: "DELETE" });
+        if (res.ok) {
+          loadSizeTypes();
+          nsSuccess("Устгагдлаа");
+        } else {
+          nsError("Алдаа гарлаа");
+        }
+      }
+
+      loadSizeTypes();
+    </script>
+
+<script src="/common.js"></script>
   </body>
 </html>

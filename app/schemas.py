@@ -32,7 +32,7 @@ class OrderIn(BaseModel):
     custom_model:       Optional[str] = None
     color_code:         Optional[str] = None
     custom_color:       Optional[str] = None
-    size:               Optional[str] = None
+    size_name:          Optional[str] = None
     gage:               Optional[str] = None
     ply:                Optional[str] = None
     order_qnty:         int = 0
@@ -51,7 +51,7 @@ class OrderUpdate(BaseModel):
     custom_model:       Optional[str] = None
     color_code:         Optional[str] = None
     custom_color:       Optional[str] = None
-    size:               Optional[str] = None
+    size_name:          Optional[str] = None
     gage:               Optional[str] = None
     ply:                Optional[str] = None
     order_qnty:         int = 0
@@ -71,7 +71,7 @@ class OrderOut(BaseModel):
     custom_model:       Optional[str] = None
     color_code:         Optional[str] = None
     custom_color:       Optional[str] = None
-    size:               Optional[str] = None
+    size_name:          Optional[str] = None
     gage:               Optional[str] = None
     ply:                Optional[str] = None
     order_qnty:         int = 0
@@ -109,3 +109,18 @@ class MatTypeOut(BaseModel):
     sort_order:  int
     class Config:
         from_attributes = True
+        
+class SizeTypeIn(BaseModel):
+    size_name:  str
+    sort_order: int = 0
+
+class SizeTypeUpdate(BaseModel):
+    size_name:  Optional[str] = None
+    sort_order: Optional[int] = None
+
+class SizeTypeOut(BaseModel):
+    size_type_id: int
+    size_name:    str
+    sort_order:   int
+    class Config:
+        from_attributes = True        

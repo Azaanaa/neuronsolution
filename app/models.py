@@ -19,7 +19,7 @@ class OrderList(Base):
     custom_model        = Column(String(50))
     color_code          = Column(String(50))
     custom_color        = Column(String(50))
-    size                = Column(String(20))
+    size_name           = Column(String(20))
     gage                = Column(String(20))
     ply                 = Column(String(20))
     order_qnty          = Column(Integer, default=0)
@@ -43,3 +43,10 @@ class MatType(Base):
     mat_name    = Column(String(100), nullable=False, unique=True)
     sort_order  = Column(Integer, default=0)
     created_at  = Column(DateTime, default=func.now())
+    
+class SizeType(Base):
+    __tablename__ = "size_types"
+    size_type_id = Column(Integer, primary_key=True, autoincrement=True)
+    size_name    = Column(String(100), nullable=False, unique=True)
+    sort_order  = Column(Integer, default=0)
+    created_at  = Column(DateTime, default=func.now())    
