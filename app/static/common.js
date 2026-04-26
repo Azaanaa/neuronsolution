@@ -21,6 +21,15 @@ async function loadAppSettings() {
       const suffix = el.getAttribute("data-app-header");
       el.textContent = appName + (suffix ? " — " + suffix : "");
     });
+
+let favicon = document.querySelector("link[rel='icon']");
+if (!favicon) {
+  favicon = document.createElement('link');
+  favicon.rel = 'icon';
+  document.head.appendChild(favicon);
+}
+favicon.href = '/neuron.ico';
+
   } catch (e) {
     console.warn("Settings ачаалахад алдаа", e);
   }

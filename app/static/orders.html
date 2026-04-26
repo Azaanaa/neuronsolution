@@ -278,13 +278,26 @@
         </div>
         <div class="form-row">
           <div class="form-group">
-            <label>Размер</label><input type="text" id="m_size" />
+            <label>Размер</label>
+            <select
+              id="m_size_type"
+              style="
+                width: 100%;
+                padding: 7px 10px;
+                border: 1px solid #ddd;
+                border-radius: 6px;
+                font-size: 13px;
+              "
+            >
+              <option value="">— сонгоно уу —</option>
+            </select>
           </div>
           <div class="form-group">
             <label>Тоо</label
             ><input type="number" id="m_order_qnty" value="0" />
           </div>
         </div>
+
         <div class="form-row">
           <div class="form-group" style="grid-column: 1/-1">
             <label>Тайлбар</label><input type="text" id="m_order_description" />
@@ -400,7 +413,7 @@
         "custom_model",
         "color_code",
         "custom_color",
-        "size",
+        "size_name",
         "gage",
         "ply",
         "order_qnty",
@@ -419,6 +432,17 @@
         });
       }
       loadMatTypes();
+
+      async function loadSizeTypes() {
+        const res = await fetch("/size_types/");
+        const list = await res.json();
+        const sel = document.getElementById("m_size_type");
+        sel.innerHTML = '<option value="">— сонгоно уу —</option>';
+        list.forEach((m) => {
+          sel.innerHTML += `<option value="${m.size_name}">${m.size_name}</option>`;
+        });
+      }
+      loadSizeTypes();
 
       const CHECKS = [
         "c_redo",
@@ -472,7 +496,7 @@
       <td>${o.custom_model || ""}</td>
       <td>${o.color_code || ""}</td>
       <td>${o.custom_color || ""}</td>
-      <td>${o.size || ""}</td>
+      <td>${o.size_name || ""}</td>
       <td>${o.gage || ""}</td>
       <td>${o.ply || ""}</td>
       <td>${o.order_qnty}</td>
@@ -529,7 +553,7 @@
           !payload.custom_model ||
           !payload.color_code ||
           !payload.custom_color ||
-          !payload.size ||
+          !payload.size_name ||
           !payload.gage ||
           !payload.ply ||
           !payload.mat_type ||
